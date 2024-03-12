@@ -1,4 +1,5 @@
 import wmi
+import ctypes
 
 class DeviceManager:
     def __init__(self):
@@ -28,3 +29,6 @@ class DeviceManager:
                 return True
         return False
 
+    def lock_screen(self):
+        # 使用Windows API锁定屏幕
+        ctypes.windll.user32.LockWorkStation()

@@ -1,106 +1,55 @@
 import tkinter as tk
-import os
 from searchMyPhone import DeviceManager
 
-class DeviceChecker:
-    def __init__(self):
-        # 创建 DeviceManager 实例
-        self.device_manager = DeviceManager()
-        
-        # 创建主窗口
-        self.root = tk.Tk()
-        self.root.title("Device Check")
-        self.root.geometry("150x180")
-        self.root.resizable(False, False)  # 设置窗口大小不可调整
-        self.root.attributes('-topmost', True)  # 置顶窗口
-        
-        # 初始化界面组件
-        self.create_widgets()
-        
-        # 初始化任务标识
-        self.check_id = None
-        self.countdown_id = None
+# 创建 DeviceManager 实例
+device_manager = DeviceManager()
 
-    def create_widgets(self):
-        # 添加标题标签
-        self.title_label = tk.Label(self.root, text="等待检测", font=("Helvetica", 15), fg="gray")
-        self.title_label.pack(pady=10)
+# 设置全局变量来控制循环
+keep_checking = False
 
-        # 添加倒计时标签
-        self.countdown_label = tk.Label(self.root, text="", font=("Helvetica", 12))
+def check_device():
+    global keep_checking
+    # 判断是否有 "Apple iPhone" 连接到计算机
+    result = device_manager.contains_device("Apple iPhone")
+    print("Result:", result)
+    # 设置标题文字和颜色
+    if result:
+        title_label.config(text="正常连接", fg="green")
+    else:
+        title_label.config(text="连接失败", fg="red")
+        # 当检测到连接失败时，停止循环并延迟3秒后锁定屏幕
+        keep_checking = False
+        root.after(3000, device_manager.lock_screen)
+    # 每5秒执行一次 check_device()
+    if keep_checking:
+        root.after(5000, check_device)
 
-        # 添加检测连接按钮
-        self.btn_check = tk.Button(self.root, text="检测连接", command=self.start_check)
-        self.btn_check.pack(pady=10)
+def start_checking():
+    global keep_checking
+    keep_checking = True
+    check_device()
 
-        # 添加停止检测按钮
-        self.btn_stop = tk.Button(self.root, text="停止检测", command=self.stop_check)
-        self.btn_stop.pack(pady=10)
+def test():
+    # 测试
+    device_manager.lock_screen()
 
-    def check_device_loop(self):
-        """循环检测设备连接状态"""
-        self.check_device()
-        if self.check_id is not None:
-            self.check_id = self.root.after(10000, self.check_device_loop)
+# 创建主窗口
+root = tk.Tk()
+root.title("Device Check")
+root.geometry("150x200")
+root.resizable(False, False)  # 设置主窗口大小不可调整
+root.attributes('-topmost', True)  # 置顶窗口
 
-    def check_device(self):
-        """检测设备连接状态"""
-        result = self.device_manager.contains_device("Apple iPhone")
-        print("Result:", result)
-        if result:
-            # 如果检测到设备连接，更新界面显示
-            self.title_label.config(text="正常连接", fg="green")
-            if self.countdown_id:
-                self.root.after_cancel(self.countdown_id)
-            self.countdown_label.pack_forget()
-        else:
-            # 如果检测到设备未连接，更新界面显示，并开始倒计时
-            self.title_label.config(text="连接失败", fg="red")
-            self.countdown_label.pack()
-            self.start_countdown()
-            if self.check_id:
-                self.root.after_cancel(self.check_id)
-            self.check_id = None
+# 添加标题控件，并设置默认文字和颜色
+title_label = tk.Label(root, text="等待检测", font=("Helvetica", 18), fg="gray")
+title_label.pack(pady=10)
 
-    def start_countdown(self):
-        """开始倒计时"""
-        self.countdown_remaining = 15
-        self.update_countdown()
+# 添加按钮，并直接绑定 start_checking() 函数
+btn_check = tk.Button(root, text="开始检测", command=start_checking)
+btn_check.pack(pady=10)
 
-    def update_countdown(self):
-        """更新倒计时"""
-        if self.countdown_remaining > 0:
-            self.countdown_label.config(text=f"锁屏倒计时：{self.countdown_remaining}秒")
-            self.countdown_remaining -= 1
-            self.countdown_id = self.root.after(1000, self.update_countdown)
-        else:
-            # 倒计时结束后执行锁屏操作，并恢复默认状态
-            self.lock_screen()
-            self.restore_default_state()
+btn_check = tk.Button(root, text="测试按钮", command=test)
+btn_check.pack(pady=10)
 
-    def lock_screen(self):
-        """锁定屏幕"""
-        os.system("rundll32.exe user32.dll,LockWorkStation")
-
-    def restore_default_state(self):
-        """恢复默认状态"""
-        self.title_label.config(text="等待检测", fg="gray")
-        self.btn_check.config(state="normal")
-        self.countdown_label.pack_forget()
-
-    def start_check(self):
-        """开始检测设备连接状态"""
-        self.btn_check.config(state="disabled")
-        self.check_device_loop()
-
-    def stop_check(self):
-        """停止检测设备连接状态"""
-        self.root.after_cancel(self.check_id)
-        if self.countdown_id:
-            self.root.after_cancel(self.countdown_id)
-        self.countdown_label.pack_forget()
-        self.restore_default_state()
-
-if __name__ == "__main__":
-    app = DeviceChecker()
-    app.root.mainloop()
+# 运行界面循环
+root.mainloop()
