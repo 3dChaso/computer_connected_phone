@@ -1,0 +1,2 @@
+# computer_connected_phone
+检测电脑是否连接手机，如果断开连接就锁定电脑
