@@ -62,7 +62,11 @@ def restore_default_state():
 def start_check():
     # 禁用检测连接按钮
     btn_check.config(state="disabled")
+    # 开始循环检测
     check_device()
+    # 启动下一次检测
+    global check_id
+    check_id = root.after(10000, start_check)
 
 def stop_check():
     global stop_clicked
@@ -100,9 +104,6 @@ btn_stop.pack(pady=10)
 
 # 变量用于跟踪是否点击了停止检测按钮
 stop_clicked = False
-
-# 每10秒执行一次 check_device()
-check_id = root.after(10000, check_device)
 
 # 运行界面循环
 root.mainloop()
