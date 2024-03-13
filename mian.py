@@ -27,8 +27,8 @@ class DeviceCheckerApp:
         self.btn_check.pack(pady=10)
 
         # 添加设备名称标签
-        self.device_label = tk.Label(master, text="检测："+self.DeviceName)
-        self.device_label.pack(pady=10)
+        self.device_label_2 = tk.Label(master, text="检测："+self.DeviceName)
+        self.device_label_2.pack(pady=10)
 
     def check_device(self):
         # 判断是否有设备连接到计算机
