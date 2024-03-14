@@ -43,6 +43,8 @@ class DeviceCheckerApp:
             self.title_label.config(text="连接失败", fg="red")
             # 当检测到连接失败时，停止循环并延迟3秒后锁定屏幕
             self.keep_checking = False
+            self.btn_check.config(state=tk.NORMAL)
+            self.btn_check.config(text="开始检测")
             self.master.after(3000, self.device_manager.lock_screen)
         # 每1秒执行一次 check_device()
         if self.keep_checking:
@@ -50,6 +52,8 @@ class DeviceCheckerApp:
 
     def start_checking(self):
         self.keep_checking = True
+        self.btn_check.config(state=tk.DISABLED)
+        self.btn_check.config(text="检测中..")
         self.check_device()
 
 if __name__ == "__main__":
