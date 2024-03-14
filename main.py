@@ -1,11 +1,13 @@
 import tkinter as tk
 from searchMyPhone import DeviceManager
+import pygetwindow as gw
+import sys
 
 class DeviceCheckerApp:
     def __init__(self, master):
         self.master = master
         master.title("Device Check")
-        master.geometry("150x200")
+        master.geometry("260x180")
         master.resizable(False, False)  # 设置主窗口大小不可调整
         master.attributes('-topmost', True)  # 置顶窗口
 
@@ -51,6 +53,14 @@ class DeviceCheckerApp:
         self.check_device()
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = DeviceCheckerApp(root)
-    root.mainloop()
+    # 获取所有打开的窗口
+    window_titles = gw.getAllTitles()
+    # 遍历所有窗口，检查是否有名为“Device Check”的窗口
+    if "Device Check" in window_titles:
+        # 退出程序
+        sys.exit("窗口 'Device Check' 存在！")
+    else:
+        root = tk.Tk()
+        app = DeviceCheckerApp(root)
+        root.mainloop()
+
