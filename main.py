@@ -44,9 +44,9 @@ class DeviceCheckerApp:
             # 当检测到连接失败时，停止循环并延迟3秒后锁定屏幕
             self.keep_checking = False
             self.master.after(3000, self.device_manager.lock_screen)
-        # 每5秒执行一次 check_device()
+        # 每1秒执行一次 check_device()
         if self.keep_checking:
-            self.master.after(5000, self.check_device)
+            self.master.after(1000, self.check_device)
 
     def start_checking(self):
         self.keep_checking = True
