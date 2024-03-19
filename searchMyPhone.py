@@ -1,6 +1,6 @@
 import wmi
 import ctypes
-
+import time
 class DeviceManager:
     def __init__(self):
         self.c = wmi.WMI()
@@ -26,9 +26,10 @@ class DeviceManager:
         # 判断是否有指定设备名称连接到计算机
         for device in connected_devices:
             if device_name in device:
-                return True
-        return False
+                return 1
+        return 0
 
     def lock_screen(self):
         # 使用Windows API锁定屏幕
+        time.sleep(3)
         ctypes.windll.user32.LockWorkStation()
