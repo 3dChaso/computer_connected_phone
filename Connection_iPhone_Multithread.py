@@ -23,6 +23,7 @@ def is_already_running():
 # 初始化变量----------------------------------------------------------------------------
 pid = os.getpid() # 本程序的PID
 DeviceName = "Apple iPhone"
+blink_icon = False #闪烁图标状态
 connection_status = 2 # 连接状态 1为连接，0为断开，2为默认
 temp_connection_status = 2 # 临时连接状态
 c = wmi.WMI()
@@ -43,13 +44,16 @@ def check_device():
 # 读取更新状态---------------------------------------------------------------------------- 
 def updataState():#图标更新状态
     global temp_connection_status
+    global blink_icon
     while True:
         if temp_connection_status != connection_status:
             if connection_status == 1 :
                 temp_connection_status = connection_status
+                blink_icon = False
                 on_option1_selected(icon)             
             else:
                 temp_connection_status = connection_status
+                blink_icon = True
                 on_option2_selected(icon)
         time.sleep(1)
 # 菜单方案----------------------------------------------------------------------------
@@ -66,7 +70,16 @@ def on_option2_selected(icon):
     icon.icon = icon_unlink_icon
     icon.title = "连接失败"
     icon.notify("连接失败", "没有检测到电脑连接："+DeviceName)   # 提示气泡
+    b = threading.Thread(target=blinkicon, )
+    b.start()
     device_manager.lock_screen()
+
+# 图标闪烁----------------------------------------------------------------------------
+def blinkicon():
+    while blink_icon:
+        icon.visible = not icon.visible
+        time.sleep(0.5)  # 闪烁间隔为0.5秒
+    
 # 主程序----------------------------------------------------------------------------
 def main():
     #程序锁
