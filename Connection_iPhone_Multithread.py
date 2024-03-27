@@ -34,6 +34,7 @@ MessageBox = ctypes.windll.user32.MessageBoxW
 icon_default_icon = Image.open("./default.png") 
 icon_link_icon = Image.open("./link.png")
 icon_unlink_icon = Image.open("./unlink.png") 
+icon_unll_icon = Image.open("./unll.png") 
 icon = pystray.Icon("example_icon", icon_default_icon, "等待中")
 device_manager = DeviceManager()# 创建 DeviceManager 实例
 file_path = "lock.pid"  # PID文件路径
@@ -100,13 +101,10 @@ def on_option2_selected(icon):
 # 图标闪烁----------------------------------------------------------------------------
 def blinkicon():
     while blink_icon:
-        if blink_icon:
-            icon.visible = not icon.visible
-            time.sleep(0.5)  # 闪烁间隔为0.5秒
-        else:
-            icon.visible = True
-            return
-    
+        icon.icon = icon_unlink_icon
+        time.sleep(0.2)  # 闪烁间隔为0.5秒
+        icon.icon = icon_unll_icon
+        time.sleep(0.2)  # 闪烁间隔为0.5秒
 # 主程序----------------------------------------------------------------------------
 def main():
     #程序锁
