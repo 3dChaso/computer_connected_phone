@@ -8,6 +8,8 @@ import sys
 import threading
 from searchMyPhone import DeviceManager
 import signal
+import psutil
+
 # 程序锁----------------------------------------------------------------------------
 LOCK_FILE = "lock.pid"
 def create_lock():
@@ -34,6 +36,27 @@ icon_link_icon = Image.open("./link.png")
 icon_unlink_icon = Image.open("./unlink.png") 
 icon = pystray.Icon("example_icon", icon_default_icon, "等待中")
 device_manager = DeviceManager()# 创建 DeviceManager 实例
+file_path = "lock.pid"  # PID文件路径
+# 检测本地PID文件----------------------------------------------------------------------------
+def read_pid_from_file(file_path):
+    try:
+        with open(file_path, 'r') as file:
+            content = file.read().strip()  # 读取文件内容并去除首尾的空白字符
+            file_pid = int(content)  # 将内容转换为整数
+            return file_pid
+    except FileNotFoundError:
+        print(f"文件 '{file_path}' 不存在。")
+    except ValueError:
+        print(f"文件 '{file_path}' 中的内容不是有效的数字。")
+
+file_pid = read_pid_from_file(file_path)
+# PID查文件名----------------------------------------------------------------------------
+def get_process_name(file_pid):
+    try:
+        process = psutil.Process(file_pid)
+        return process.name()
+    except psutil.NoSuchProcess:
+        return 0
 # 检测程序----------------------------------------------------------------------------
 def check_device():
     global connection_status
@@ -87,9 +110,16 @@ def blinkicon():
 # 主程序----------------------------------------------------------------------------
 def main():
     #程序锁
+    global file_pid,process_name
     if is_already_running():
-        MessageBox(None, '检测程序已经启动了，不需重复启动', '程序已经运行', 0)
-        sys.exit(1)
+        file_pid = read_pid_from_file(file_path)
+        process_name = get_process_name(file_pid)    
+        if process_name == "Connection_iPhone_Multithread.exe":
+            MessageBox(None, '检测程序已经启动了，不需重复启动', '程序已经运行', 0)
+            #判断是否正常退出
+            sys.exit(1)
+        else:
+            os.remove(file_path)
     create_lock()
     # 创建图标
     # 创建菜单项
