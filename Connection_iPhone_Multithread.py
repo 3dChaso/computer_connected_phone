@@ -70,13 +70,19 @@ def on_option2_selected(icon):
     icon.icon = icon_unlink_icon
     icon.title = "连接失败"
     icon.notify("连接失败", "没有检测到电脑连接："+DeviceName)   # 提示气泡
+    b = threading.Thread(target=blinkicon, )
+    b.start()
     device_manager.lock_screen()
-    while blink_icon:
-        icon.visible = not icon.visible
-        time.sleep(0.5)  # 闪烁间隔为0.5秒
 
 # 图标闪烁----------------------------------------------------------------------------
-
+def blinkicon():
+    while blink_icon:
+        if blink_icon:
+            icon.visible = not icon.visible
+            time.sleep(0.5)  # 闪烁间隔为0.5秒
+        else:
+            icon.visible = True
+            return
     
 # 主程序----------------------------------------------------------------------------
 def main():
