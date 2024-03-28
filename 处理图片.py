@@ -16,7 +16,7 @@ def pic2py(picture_names, py_name):
 # 需要转码的图片：
 os.chdir('./')#路径转为图像所在路径
 
-pics = ['default.png','link.png','unlink.png']#将你的图片都输入进去
+pics = ['default.png','link.png','unlink.png','unll.png']#将你的图片都输入进去
 # 将pics里面的图片写到 image.py 中
 pic2py(pics, 'images')
 print("转码完成...")

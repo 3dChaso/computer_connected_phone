@@ -9,6 +9,9 @@ import threading
 from searchMyPhone import DeviceManager
 import signal
 import psutil
+import imagesData
+import base64
+import io
 
 # 程序锁----------------------------------------------------------------------------
 LOCK_FILE = "lock.pid"
@@ -22,6 +25,17 @@ def remove_lock():
 
 def is_already_running():
     return os.path.isfile(LOCK_FILE)
+# base64解码----------------------------------------------------------------------------
+def decode_base64_to_image(base64_string):
+    image_data = base64.b64decode(base64_string)
+    image = Image.open(io.BytesIO(image_data))
+    return image
+# 图片赋值----------------------------------------------------------------------------
+icon_default_icon = decode_base64_to_image(imagesData.default_png)
+icon_link_icon = decode_base64_to_image(imagesData.link_png)
+icon_unlink_icon = decode_base64_to_image(imagesData.unlink_png)
+icon_unll_icon = decode_base64_to_image(imagesData.unll_png)
+icon = pystray.Icon("example_icon", icon_default_icon, "等待中")
 # 初始化变量----------------------------------------------------------------------------
 pid = os.getpid() # 本程序的PID
 DeviceName = "Apple iPhone"
@@ -31,13 +45,9 @@ temp_connection_status = 2 # 临时连接状态
 c = wmi.WMI()
 # 调用Windows平台上的消息框
 MessageBox = ctypes.windll.user32.MessageBoxW
-icon_default_icon = Image.open("./default.png") 
-icon_link_icon = Image.open("./link.png")
-icon_unlink_icon = Image.open("./unlink.png") 
-icon_unll_icon = Image.open("./unll.png") 
-icon = pystray.Icon("example_icon", icon_default_icon, "等待中")
 device_manager = DeviceManager()# 创建 DeviceManager 实例
 file_path = "lock.pid"  # PID文件路径
+blinkiconWhile = False
 # 检测本地PID文件----------------------------------------------------------------------------
 def read_pid_from_file(file_path):
     try:
@@ -64,7 +74,7 @@ def check_device():
     while True:
         connection_status = device_manager.contains_device(DeviceName) # 更新连接状态
         # print(connection_status)
-        time.sleep(1)
+        time.sleep(0.05)
 # 读取更新状态---------------------------------------------------------------------------- 
 def updataState():#图标更新状态
     global temp_connection_status
@@ -79,7 +89,7 @@ def updataState():#图标更新状态
                 temp_connection_status = connection_status
                 blink_icon = True
                 on_option2_selected(icon)
-        time.sleep(1)
+        time.sleep(0.05)
 # 菜单方案----------------------------------------------------------------------------
 def on_quit_callback(icon): # 退出
     remove_lock()
@@ -87,6 +97,8 @@ def on_quit_callback(icon): # 退出
     os.kill(pid, signal.SIGTERM)
 
 def on_option1_selected(icon):
+    while blinkiconWhile:#判断闪烁结束
+        time.sleep(0.1)
     icon.icon = icon_link_icon
     icon.title = "连接正常"
     icon.notify("连接正常", "检测到连接的："+DeviceName)   # 提示气泡
@@ -100,11 +112,14 @@ def on_option2_selected(icon):
 
 # 图标闪烁----------------------------------------------------------------------------
 def blinkicon():
+    global blinkiconWhile #循环状态
     while blink_icon:
+        blinkiconWhile = True 
         icon.icon = icon_unlink_icon
-        time.sleep(0.2)  # 闪烁间隔为0.5秒
+        time.sleep(0.2)  
         icon.icon = icon_unll_icon
-        time.sleep(0.2)  # 闪烁间隔为0.5秒
+        time.sleep(0.2)  
+    blinkiconWhile = False
 # 主程序----------------------------------------------------------------------------
 def main():
     #程序锁
