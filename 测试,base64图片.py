@@ -13,5 +13,5 @@ def decode_base64_to_image(base64_string):
 if __name__ == "__main__":
     base64_string = imagesData.default_png  # 将Base64字符串替换为你的实际Base64字符串
 
-    decoded_image = decode_base64_to_image(base64_string)
+    decoded_image = decode_base64_to_image(imagesData.default_png)
     decoded_image.show()  # 在默认图像查看器中显示解码后的图像

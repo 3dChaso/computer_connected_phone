@@ -12,6 +12,7 @@ import psutil
 import imagesData
 import base64
 import io
+import configparser
 
 # 程序锁----------------------------------------------------------------------------
 LOCK_FILE = "lock.pid"
@@ -38,7 +39,7 @@ icon_unll_icon = decode_base64_to_image(imagesData.unll_png)
 icon = pystray.Icon("example_icon", icon_default_icon, "等待中")
 # 初始化变量----------------------------------------------------------------------------
 pid = os.getpid() # 本程序的PID
-DeviceName = "Apple iPhone"
+#DeviceName = "Apple iPhone"
 blink_icon = False #闪烁图标状态
 connection_status = 2 # 连接状态 1为连接，0为断开，2为默认
 temp_connection_status = 2 # 临时连接状态
@@ -48,6 +49,21 @@ MessageBox = ctypes.windll.user32.MessageBoxW
 device_manager = DeviceManager()# 创建 DeviceManager 实例
 file_path = "lock.pid"  # PID文件路径
 blinkiconWhile = False
+# 读取配置文件----------------------------------------------------------------------------
+def read_device_name():
+    device_name = None
+    config = configparser.ConfigParser()
+    if os.path.exists('DeviceName.ini'):
+        config.read('DeviceName.ini')
+        if 'DeviceName' in config and 'DeviceName' in config['DeviceName']:
+            device_name = config['DeviceName']['DeviceName']
+    return device_name
+
+def write_device_name(device_name='Apple iPhone'):
+    config = configparser.ConfigParser()
+    config['DeviceName'] = {'DeviceName': device_name}
+    with open('DeviceName.ini', 'w') as configfile:
+        config.write(configfile)
 # 检测本地PID文件----------------------------------------------------------------------------
 def read_pid_from_file(file_path):
     try:
@@ -72,7 +88,7 @@ def get_process_name(file_pid):
 def check_device():
     global connection_status
     while True:
-        connection_status = device_manager.contains_device(DeviceName) # 更新连接状态
+        connection_status = device_manager.contains_device(iniDeviceName) # 更新连接状态
         # print(connection_status)
         time.sleep(0.05)
 # 读取更新状态---------------------------------------------------------------------------- 
@@ -100,12 +116,12 @@ def on_option1_selected(icon):
     while blinkiconWhile:#判断闪烁结束
         time.sleep(0.1)
     icon.icon = icon_link_icon
-    icon.title = "连接正常"
-    icon.notify("连接正常", "检测到连接的："+DeviceName)   # 提示气泡
+    icon.title = "连接正常,连接设备为："+iniDeviceName
+    icon.notify("连接正常", "检测到连接的："+iniDeviceName)   # 提示气泡
 def on_option2_selected(icon):
     icon.icon = icon_unlink_icon
-    icon.title = "连接失败"
-    icon.notify("连接失败", "没有检测到电脑连接："+DeviceName)   # 提示气泡
+    icon.title = "连接失败,没有找到设备："+iniDeviceName
+    icon.notify("连接失败", "没有检测到电脑连接："+iniDeviceName)   # 提示气泡
     b = threading.Thread(target=blinkicon, )
     b.start()
     device_manager.lock_screen()
@@ -123,7 +139,7 @@ def blinkicon():
 # 主程序----------------------------------------------------------------------------
 def main():
     #程序锁
-    global file_pid,process_name
+    global file_pid,process_name,iniDeviceName
     if is_already_running():
         file_pid = read_pid_from_file(file_path)
         process_name = get_process_name(file_pid)    
@@ -140,6 +156,15 @@ def main():
     menu_quit = pystray.MenuItem("退出", on_quit_callback)
     # 构建菜单
     icon.menu = pystray.Menu(menu_quit)
+    # 读取ini
+    iniDeviceName = read_device_name()
+    if iniDeviceName != None:
+        print("Device Name:", iniDeviceName)
+    else:
+        iniDeviceName = 'Apple iPhone'
+        icon.notify("配置文件", "自动生成配置文件")   # 提示气泡
+        write_device_name()
+
     # 显示图标进程
     t = threading.Thread(target=icon.run, )
     t.start()
